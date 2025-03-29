@@ -49,7 +49,7 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
     return filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [filteredData, page, rowsPerPage]);
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_: unknown, newPage: number) => {
     setPage(newPage);
   };
 

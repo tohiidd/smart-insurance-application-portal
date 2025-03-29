@@ -12,7 +12,7 @@ function FormPage() {
   const [tabValue, setTabValue] = useState(0);
   const { showToast } = useToast();
 
-  const handleTabChange = (event: SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
