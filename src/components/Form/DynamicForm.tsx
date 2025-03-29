@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import {
   TextField,
   Select,
@@ -12,10 +12,13 @@ import {
   Checkbox,
   FormGroup,
   Box,
+  SelectChangeEvent,
+  Button,
 } from '@mui/material';
-import { FormData, DynamicOptions, FormField } from '../../services/formService';
+import { FormData, DynamicOptions, FormField, formService } from '../../services/formService';
 import api from '../../utils/api';
 import { DatePicker } from '@mui/x-date-pickers';
+import { useToast } from '../../context/ToastContext';
 
 interface DynamicFormProps {
   formData: FormData;
@@ -24,7 +27,30 @@ interface DynamicFormProps {
 function DynamicForm({ formData }: DynamicFormProps) {
   const [dynamicOptions, setDynamicOptions] = useState<Record<string, any[]>>({});
   const dynamicOptionsRef = useRef<DynamicOptions[]>([]);
-  const { watch, control } = useFormContext();
+  const { watch, control, handleSubmit } = useForm({ mode: 'onSubmit' });
+  const { showToast } = useToast();
+
+  const onSubmit = async (data: Record<string, unknown>) => {
+    try {
+      await formService.submitForm(data);
+      showToast('Form submitted successfully', 'success');
+    } catch (error) {
+      console.error(error);
+      showToast('Failed to submit form', 'error');
+    }
+  };
+
+  const fetchDynamicOptions = async (field: FormField, event: SelectChangeEvent<HTMLSelectElement>) => {
+    const dynamicOption = dynamicOptionsRef.current.find((option) => option.dependsOn === field.id);
+    if (dynamicOption) {
+      try {
+        const response = await api.get(dynamicOption?.endpoint, { params: { country: event?.target?.value } });
+        setDynamicOptions((prev) => ({ ...prev, [field.id]: response.data.states }));
+      } catch (error) {
+        console.error(`Error fetching ${field?.id} options:`, error);
+      }
+    }
+  };
 
   const renderField = (field: FormField) => {
     if (field.visibility && watch(field?.visibility?.dependsOn) !== field.visibility.value) return null;
@@ -37,8 +63,24 @@ function DynamicForm({ formData }: DynamicFormProps) {
             key={field.id}
             name={field.id}
             control={control}
-            defaultValue=""
-            render={({ field: { onChange, value } }) => (
+            rules={{
+              required: field.required ? `${field.label} is required` : false,
+              max: {
+                value: field?.validation?.max,
+                message: `${field.label} must be less than ${field.validation?.max}`,
+              },
+              min: {
+                value: field?.validation?.min,
+                message: `${field.label} must be at least ${field?.validation?.min}`,
+              },
+              pattern: field?.validation?.pattern
+                ? {
+                    value: new RegExp(field.validation.pattern),
+                    message: field.validation.message || 'Invalid input',
+                  }
+                : undefined,
+            }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
               <TextField
                 label={field.label}
                 type={field.type}
@@ -47,6 +89,8 @@ function DynamicForm({ formData }: DynamicFormProps) {
                 required={field.required}
                 fullWidth
                 margin="normal"
+                error={!!error}
+                helperText={error?.message}
               />
             )}
           />
@@ -57,8 +101,19 @@ function DynamicForm({ formData }: DynamicFormProps) {
             key={field.id}
             name={field.id}
             control={control}
-            defaultValue=""
-            render={({ field: { onChange } }) => <DatePicker label={field.label} onChange={onChange} />}
+            rules={{
+              required: field.required ? `${field.label} is required` : false,
+            }}
+            render={({ field: { onChange }, fieldState: { error } }) => (
+              <FormControl fullWidth error={!!error}>
+                <DatePicker label={field.label} onChange={onChange} />
+                {error && (
+                  <Box component="span" sx={{ color: 'error.main', fontSize: '0.75rem', mt: 1 }}>
+                    {error.message}
+                  </Box>
+                )}
+              </FormControl>
+            )}
           />
         );
       case 'select':
@@ -71,26 +126,15 @@ function DynamicForm({ formData }: DynamicFormProps) {
             render={({ field: { onChange, value } }) => {
               if (field?.dynamicOptions) {
                 dynamicOptionsRef.current.push(field.dynamicOptions);
-                console.log(field);
-                console.log(dynamicOptions?.[field?.dynamicOptions?.dependsOn]);
               }
 
               return (
-                <FormControl fullWidth margin="normal">
+                <FormControl fullWidth margin="normal" required={field.required}>
                   <InputLabel>{field.label}</InputLabel>
                   <Select
                     value={value}
                     onChange={async (event) => {
-                      const dynamicOption = dynamicOptionsRef.current.find((option) => option.dependsOn === field.id);
-                      if (dynamicOption) {
-                        try {
-                          const response = await api.get(dynamicOption?.endpoint, { params: { country: event?.target?.value } });
-                          setDynamicOptions((prev) => ({ ...prev, [field.id]: response.data.states }));
-                        } catch (error) {
-                          console.error(`Error fetching ${field?.id} options:`, error);
-                        }
-                      }
-
+                      await fetchDynamicOptions(field, event);
                       onChange(event);
                     }}
                     required={field.required}
@@ -113,15 +157,22 @@ function DynamicForm({ formData }: DynamicFormProps) {
             key={field.id}
             name={field.id}
             control={control}
-            defaultValue=""
-            render={({ field: { onChange, value } }) => (
-              <FormControl component="fieldset" sx={{ display: 'block' }} margin="normal">
+            rules={{
+              required: field.required ? `${field.label} is required` : false,
+            }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <FormControl component="fieldset" sx={{ display: 'block' }} margin="normal" required={field.required}>
                 <label>{field.label}</label>
                 <RadioGroup value={value} onChange={onChange}>
                   {field?.options?.map((option) => (
                     <FormControlLabel key={option} value={option} control={<Radio />} label={option} />
                   ))}
                 </RadioGroup>
+                {error && (
+                  <Box component="span" sx={{ color: 'error.main', fontSize: '0.75rem', mt: 1 }}>
+                    {error.message}
+                  </Box>
+                )}
               </FormControl>
             )}
           />
@@ -171,10 +222,12 @@ function DynamicForm({ formData }: DynamicFormProps) {
   };
 
   return (
-    <Box>
-      <h2>{formData.title}</h2>
+    <form onSubmit={handleSubmit(onSubmit)}>
       {formData?.fields?.map(renderField)}
-    </Box>
+      <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+        Submit
+      </Button>
+    </form>
   );
 }
 

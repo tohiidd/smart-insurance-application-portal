@@ -1,25 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, CircularProgress } from '@mui/material';
-import { useToast } from '../context/ToastContext';
+import { Box, CircularProgress, Tab, Tabs } from '@mui/material';
 import { formService, FormData } from '../services/formService';
-import { FormProvider, useForm } from 'react-hook-form';
 import DynamicForm from '../components/Form/DynamicForm';
+import FormTabPanel from '../components/Form/FormTabPanel';
+import { useToast } from '../context/ToastContext';
 
 export default function FormPage() {
   const [formData, setFormData] = useState<FormData[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tabValue, setTabValue] = useState(0);
   const { showToast } = useToast();
 
-  const methods = useForm({ mode: 'onChange' });
-
-  const onSubmit = async (data: Record<string, unknown>) => {
-    try {
-      await formService.submitForm(data);
-      showToast('Form submitted successfully', 'success');
-    } catch (error) {
-      console.error(error);
-      showToast('Failed to submit form', 'error');
-    }
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
   };
 
   useEffect(() => {
@@ -45,15 +38,22 @@ export default function FormPage() {
       </Box>
     );
   }
+  console.log('formData', formData);
 
   return (
-    <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
-        {formData && formData.map((field, i) => <DynamicForm key={i} formData={field} />)}
-        <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-          Submit
-        </Button>
-      </form>
-    </FormProvider>
+    <Box sx={{ width: '100%' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tabValue} onChange={handleChange} aria-label="form tabs">
+          {formData?.map((form) => (
+            <Tab label={form?.title} id={form?.formId} />
+          ))}
+        </Tabs>
+      </Box>
+      {formData?.map((form, i) => (
+        <FormTabPanel key={form?.formId} value={tabValue} index={i}>
+          <DynamicForm formData={form} />
+        </FormTabPanel>
+      ))}
+    </Box>
   );
 }

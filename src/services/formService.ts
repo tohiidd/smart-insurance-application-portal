@@ -25,6 +25,8 @@ export interface FormField {
   validation?: {
     pattern?: string;
     message?: string;
+    max?: number;
+    min?: number;
   };
 }
 
