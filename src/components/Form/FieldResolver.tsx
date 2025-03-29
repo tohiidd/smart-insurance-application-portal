@@ -1,4 +1,4 @@
-import { Controller, useFormContext } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { FormField } from '../../services/formService';
 import {
   Box,
@@ -16,13 +16,14 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import api from '../../utils/api';
 import { useState } from 'react';
+import ControlledField from './ControlledField';
 interface FieldResolverProps {
   field: FormField;
 }
 
 function FieldResolver({ field }: FieldResolverProps) {
-  const { watch, control } = useFormContext();
-  const [dynamicOptions, setDynamicOptions] = useState<Record<string, any[]>>({});
+  const { watch } = useFormContext();
+  const [dynamicOptions, setDynamicOptions] = useState<Record<string, string[]>>({});
   const [isLoadingFetchingDynamicOptions, setIsLoadingFetchingDynamicOptions] = useState(false);
 
   if (field.visibility && watch(field?.visibility?.dependsOn) !== field.visibility.value) return null;
@@ -44,32 +45,8 @@ function FieldResolver({ field }: FieldResolverProps) {
     case 'text':
     case 'number':
       return (
-        <Controller
-          key={field.id}
-          name={field.id}
-          control={control}
-          rules={{
-            required: field.required ? `${field.label} is required` : false,
-            ...(field?.validation?.max && {
-              max: {
-                value: field?.validation?.max,
-                message: `${field.label} must be less than ${field.validation?.max}`,
-              },
-            }),
-            ...(field?.validation?.min && {
-              min: {
-                value: field?.validation?.min,
-                message: `${field.label} must be at least ${field?.validation?.min}`,
-              },
-            }),
-            pattern: field?.validation?.pattern
-              ? {
-                  value: new RegExp(field.validation.pattern),
-                  message: field.validation.message || 'Invalid input',
-                }
-              : undefined,
-          }}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <ControlledField field={field}>
+          {({ onChange, value, error }) => (
             <TextField
               label={field.label}
               type={field.type}
@@ -82,18 +59,13 @@ function FieldResolver({ field }: FieldResolverProps) {
               helperText={error?.message}
             />
           )}
-        />
+        </ControlledField>
       );
+
     case 'date':
       return (
-        <Controller
-          key={field.id}
-          name={field.id}
-          control={control}
-          rules={{
-            required: field.required ? `${field.label} is required` : false,
-          }}
-          render={({ field: { onChange }, fieldState: { error } }) => (
+        <ControlledField field={field}>
+          {({ onChange, error }) => (
             <FormControl fullWidth error={!!error}>
               <DatePicker label={field.label} onChange={onChange} />
               {error && (
@@ -103,15 +75,13 @@ function FieldResolver({ field }: FieldResolverProps) {
               )}
             </FormControl>
           )}
-        />
+        </ControlledField>
       );
+
     case 'select':
       return (
-        <Controller
-          key={field.id}
-          name={field.id}
-          control={control}
-          render={({ field: { onChange, value } }) => (
+        <ControlledField field={field}>
+          {({ onChange, value }) => (
             <FormControl fullWidth margin="normal" required={field.required}>
               <InputLabel>{field.label}</InputLabel>
               <Select
@@ -135,19 +105,13 @@ function FieldResolver({ field }: FieldResolverProps) {
               </Select>
             </FormControl>
           )}
-        />
+        </ControlledField>
       );
 
     case 'radio':
       return (
-        <Controller
-          key={field.id}
-          name={field.id}
-          control={control}
-          rules={{
-            required: field.required ? `${field.label} is required` : false,
-          }}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <ControlledField field={field}>
+          {({ onChange, value, error }) => (
             <FormControl component="fieldset" sx={{ display: 'block' }} margin="normal" required={field.required}>
               <label>{field.label}</label>
               <RadioGroup value={value} onChange={onChange}>
@@ -162,31 +126,24 @@ function FieldResolver({ field }: FieldResolverProps) {
               )}
             </FormControl>
           )}
-        />
+        </ControlledField>
       );
 
     case 'checkbox':
       return (
-        <Controller
-          key={field.id}
-          name={field.id}
-          control={control}
-          defaultValue={[]}
-          rules={{
-            required: field.required ? `${field.label} is required` : false,
-          }}
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <ControlledField field={field}>
+          {({ onChange, value, error }) => (
             <FormGroup>
               <label>{field.label}</label>
               {field?.options?.map((option) => (
                 <FormControlLabel
                   key={option}
-                  required={field.required}
                   control={
                     <Checkbox
-                      checked={value.includes(option)}
+                      checked={(value as string[])?.includes(option)}
                       onChange={(e) => {
-                        const newValue = e.target.checked ? [...value, option] : value.filter((item: string) => item !== option);
+                        const currentValue = (value as string[]) || [];
+                        const newValue = e.target.checked ? [...currentValue, option] : currentValue.filter((item) => item !== option);
                         onChange(newValue);
                       }}
                     />
@@ -201,7 +158,7 @@ function FieldResolver({ field }: FieldResolverProps) {
               )}
             </FormGroup>
           )}
-        />
+        </ControlledField>
       );
 
     case 'group':
