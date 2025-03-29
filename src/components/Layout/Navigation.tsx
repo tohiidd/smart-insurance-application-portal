@@ -1,11 +1,12 @@
 import { AppBar, Toolbar, Typography, Button, Box, IconButton } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function Navigation() {
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const location = useLocation();
 
   return (
     <AppBar
@@ -28,6 +29,7 @@ export default function Navigation() {
             to="/"
             sx={{
               color: isDarkMode ? 'text.primary' : 'inherit',
+              bgcolor: location.pathname === '/' ? (isDarkMode ? 'action.selected' : 'primary.dark') : 'transparent',
               '&:hover': {
                 bgcolor: isDarkMode ? 'action.hover' : 'primary.dark',
               },
@@ -41,6 +43,7 @@ export default function Navigation() {
             to="/submissions"
             sx={{
               color: isDarkMode ? 'text.primary' : 'inherit',
+              bgcolor: location.pathname === '/submissions' ? (isDarkMode ? 'action.selected' : 'primary.dark') : 'transparent',
               '&:hover': {
                 bgcolor: isDarkMode ? 'action.hover' : 'primary.dark',
               },
