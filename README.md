@@ -1,54 +1,163 @@
-# React + TypeScript + Vite
+# Smart Insurance Application Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Features
 
-Currently, two official plugins are available:
+- Dynamic form generation based on API configuration
+- Dark/Light mode support
+- Responsive design
+- Form submission tracking
+- Searchable and filterable submissions table
+- Column visibility controls
+- Pagination support
+- Toast notifications
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js (v14 or higher)
+- pnpm (v7 or higher)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Setup Instructions
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd smart-insurance-application-portal
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+pnpm install
+```
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+3. Start the development server:
+
+```bash
+pnpm run dev
+```
+
+4. Build for production:
+
+```bash
+pnpm run build
+```
+
+## API Usage
+
+### Form Configuration API
+
+#### Get Form Configuration
+
+```typescript
+GET /api/form
+Response: FormData[]
+```
+
+Example response:
+
+```json
+[
+  {
+    "formId": "string",
+    "title": "string",
+    "fields": [
+      {
+        "id": "string",
+        "type": "text|select|date|number|checkbox",
+        "label": "string",
+        "required": boolean,
+        "options": string[],
+        "validation": {
+          "pattern": "string",
+          "message": "string",
+          "max": number,
+          "min": number
+        },
+        "dynamicOptions": {
+          "dependsOn": "string",
+          "endpoint": "string",
+          "method": "GET|POST"
+        },
+        "visibility": {
+          "condition": "string",
+          "dependsOn": "string",
+          "value": "string"
+        }
+      }
+    ]
+  }
+]
+```
+
+#### Submit Form
+
+```typescript
+POST /api/submit
+Request Body: Record<string, unknown>
+```
+
+#### Get Submissions
+
+```typescript
+GET /api/submissions
+Response: {
+  columns: string[],
+  data: Record<string, string | number>[]
+}
+```
+
+## Assumptions
+
+1. API Endpoints:
+
+   - The application includes the existence of three main API endpoints:
+     - `/api/form` for form configuration
+     - `/api/submit` for form submissions
+     - `/api/submissions` for retrieving submissions
+
+2. Form Configuration:
+
+   - Form fields support the following types:
+     - text
+     - select
+     - date
+     - number
+     - checkbox
+   - Dynamic options are supported for select fields
+   - Field visibility can be controlled based on other field values
+   - Validation rules are supported for all field types
+
+3. State Management:
+   - Theme preferences are persisted in localStorage
+   - Form state is managed locally within components
+   - API responses are cached appropriately
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── Form/
+│   │   ├── DynamicForm.tsx
+│   │   └── FormTabPanel.tsx
+│   ├── Layout/
+│   │   └── Navigation.tsx
+│   ├── Submissions/
+│   │   └── SubmissionsTable.tsx
+│   └── Ui/
+│       └── LoadingPlaceholder.tsx
+├── context/
+│   ├── ThemeContext.tsx
+│   └── ToastContext.tsx
+├── pages/
+│   ├── FormPage.tsx
+│   └── SubmissionsPage.tsx
+├── services/
+│   └── formService.ts
+├── theme/
+│   └── theme.ts
+├── utils/
+│   └── api.ts
+└── App.tsx
 ```
