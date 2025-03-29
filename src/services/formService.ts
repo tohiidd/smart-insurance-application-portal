@@ -46,3 +46,15 @@ export const formService = {
     await api.post(API_ENDPOINTS.submitForm, formData);
   },
 };
+
+export interface SubmissionData {
+  columns: ['Full Name', 'Age', 'Gender', 'Insurance Type', 'City'];
+  data: Record<string, string | number>[];
+}
+
+export const submissionService = {
+  getSubmissions: async (): Promise<SubmissionData> => {
+    const response = await api.get(API_ENDPOINTS.submissions);
+    return response.data;
+  },
+};
