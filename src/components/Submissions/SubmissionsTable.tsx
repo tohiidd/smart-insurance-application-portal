@@ -65,9 +65,10 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', flexDirection: { xs: 'column-reverse', md: 'row' }, gap: 2 }}>
         <TextField
           size="small"
+          sx={{ width: { xs: '100%', md: 'auto' } }}
           placeholder="Search..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
