@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import { Box, CircularProgress, Tab, Tabs } from '@mui/material';
 import { formService, FormData } from '../services/formService';
 import DynamicForm from '../components/Form/DynamicForm';
@@ -11,7 +11,7 @@ export default function FormPage() {
   const [tabValue, setTabValue] = useState(0);
   const { showToast } = useToast();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (event: SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
@@ -43,9 +43,9 @@ export default function FormPage() {
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleChange} aria-label="form tabs">
+        <Tabs value={tabValue} onChange={handleTabChange} aria-label="form tabs">
           {formData?.map((form) => (
-            <Tab label={form?.title} id={form?.formId} />
+            <Tab key={form?.formId} label={form?.title} id={form?.formId} />
           ))}
         </Tabs>
       </Box>
