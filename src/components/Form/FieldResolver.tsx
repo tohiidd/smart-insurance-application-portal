@@ -50,14 +50,18 @@ function FieldResolver({ field }: FieldResolverProps) {
           control={control}
           rules={{
             required: field.required ? `${field.label} is required` : false,
-            max: {
-              value: field?.validation?.max,
-              message: `${field.label} must be less than ${field.validation?.max}`,
-            },
-            min: {
-              value: field?.validation?.min,
-              message: `${field.label} must be at least ${field?.validation?.min}`,
-            },
+            ...(field?.validation?.max && {
+              max: {
+                value: field?.validation?.max,
+                message: `${field.label} must be less than ${field.validation?.max}`,
+              },
+            }),
+            ...(field?.validation?.min && {
+              min: {
+                value: field?.validation?.min,
+                message: `${field.label} must be at least ${field?.validation?.min}`,
+              },
+            }),
             pattern: field?.validation?.pattern
               ? {
                   value: new RegExp(field.validation.pattern),
@@ -182,7 +186,7 @@ function FieldResolver({ field }: FieldResolverProps) {
                     <Checkbox
                       checked={value.includes(option)}
                       onChange={(e) => {
-                        const newValue = e.target.checked ? [...value, option] : value.filter((item) => item !== option);
+                        const newValue = e.target.checked ? [...value, option] : value.filter((item: string) => item !== option);
                         onChange(newValue);
                       }}
                     />
