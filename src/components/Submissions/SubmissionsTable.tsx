@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { SubmissionData } from '../../services/formService';
+import { useTheme } from '../../context/ThemeContext';
 
 interface SubmissionsTableProps {
   data: SubmissionData;
@@ -25,6 +26,7 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({});
+  const { isDarkMode } = useTheme();
 
   useMemo(() => {
     const initialColumns: Record<string, boolean> = {};
@@ -64,11 +66,38 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
   };
 
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', flexDirection: { xs: 'column-reverse', md: 'row' }, gap: 2 }}>
+    <Paper
+      sx={{
+        width: '100%',
+        overflow: 'hidden',
+        bgcolor: isDarkMode ? 'background.paper' : 'background.default',
+        '& .MuiTableCell-root': {
+          color: isDarkMode ? 'text.primary' : 'text.secondary',
+        },
+        '& .MuiTableHead-root .MuiTableCell-root': {
+          bgcolor: isDarkMode ? 'background.default' : 'background.paper',
+        },
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: { xs: 'column-reverse', md: 'row' },
+          gap: 2,
+          bgcolor: isDarkMode ? 'background.default' : 'background.paper',
+        }}
+      >
         <TextField
           size="small"
-          sx={{ width: { xs: '100%', md: 'auto' } }}
+          sx={{
+            width: { xs: '100%', md: 'auto' },
+            '& .MuiOutlinedInput-root': {
+              bgcolor: isDarkMode ? 'background.paper' : 'background.default',
+              color: isDarkMode ? 'text.primary' : 'text.secondary',
+            },
+          }}
           placeholder="Search..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -76,12 +105,15 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
             startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
           }}
         />
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
           {data.columns.map((column) => (
             <FormControlLabel
               key={column}
               control={<Checkbox checked={visibleColumns[column]} onChange={() => toggleColumn(column)} />}
               label={column}
+              sx={{
+                color: isDarkMode ? 'text.primary' : 'text.secondary',
+              }}
             />
           ))}
         </Box>
@@ -93,7 +125,14 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
               {data.columns
                 .filter((column) => visibleColumns[column])
                 .map((column) => (
-                  <TableCell key={column} style={{ minWidth: 170 }}>
+                  <TableCell
+                    key={column}
+                    style={{ minWidth: 170 }}
+                    sx={{
+                      bgcolor: isDarkMode ? 'background.default' : 'background.paper',
+                      color: isDarkMode ? 'text.primary' : 'text.secondary',
+                    }}
+                  >
                     {column}
                   </TableCell>
                 ))}
@@ -101,11 +140,28 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
           </TableHead>
           <TableBody>
             {paginatedData.map((row, index) => (
-              <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+              <TableRow
+                hover
+                role="checkbox"
+                tabIndex={-1}
+                key={index}
+                sx={{
+                  '&:hover': {
+                    bgcolor: isDarkMode ? 'action.hover' : 'action.hover',
+                  },
+                }}
+              >
                 {data.columns
                   .filter((column) => visibleColumns[column])
                   .map((column) => (
-                    <TableCell key={column}>{row[column]}</TableCell>
+                    <TableCell
+                      key={column}
+                      sx={{
+                        color: isDarkMode ? 'text.primary' : 'text.secondary',
+                      }}
+                    >
+                      {row[column]}
+                    </TableCell>
                   ))}
               </TableRow>
             ))}
@@ -120,6 +176,9 @@ function SubmissionsTable({ data }: SubmissionsTableProps) {
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{
+          color: isDarkMode ? 'text.primary' : 'text.secondary',
+        }}
       />
     </Paper>
   );

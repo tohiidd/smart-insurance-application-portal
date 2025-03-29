@@ -1,41 +1,66 @@
-import { Link, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function Navigation() {
-  const location = useLocation();
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   return (
-    <AppBar position="static">
+    <AppBar
+      position="static"
+      sx={{
+        bgcolor: isDarkMode ? 'background.paper' : 'primary.main',
+        '& .MuiToolbar-root': {
+          justifyContent: 'space-between',
+        },
+      }}
+    >
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Insurance Portal
         </Typography>
-        <Button
-          color="inherit"
-          component={Link}
-          to="/"
-          sx={{
-            backgroundColor: location.pathname === '/' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        >
-          Form
-        </Button>
-        <Button
-          color="inherit"
-          component={Link}
-          to="/submissions"
-          sx={{
-            backgroundColor: location.pathname === '/submissions' ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        >
-          Submissions
-        </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/"
+            sx={{
+              color: isDarkMode ? 'text.primary' : 'inherit',
+              '&:hover': {
+                bgcolor: isDarkMode ? 'action.hover' : 'primary.dark',
+              },
+            }}
+          >
+            New Application
+          </Button>
+          <Button
+            color="inherit"
+            component={RouterLink}
+            to="/submissions"
+            sx={{
+              color: isDarkMode ? 'text.primary' : 'inherit',
+              '&:hover': {
+                bgcolor: isDarkMode ? 'action.hover' : 'primary.dark',
+              },
+            }}
+          >
+            Submissions
+          </Button>
+          <IconButton
+            onClick={toggleDarkMode}
+            color="inherit"
+            sx={{
+              color: isDarkMode ? 'text.primary' : 'inherit',
+              '&:hover': {
+                bgcolor: isDarkMode ? 'action.hover' : 'primary.dark',
+              },
+            }}
+          >
+            {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
+          </IconButton>
+        </Box>
       </Toolbar>
     </AppBar>
   );
