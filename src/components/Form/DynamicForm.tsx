@@ -33,7 +33,15 @@ function DynamicForm({ formData }: DynamicFormProps) {
         {formData?.fields?.map((field) => (
           <FieldResolver key={field.id} field={field} />
         ))}
-        <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={isSubmitLoading}>
+        <Button
+          type="submit"
+          variant="contained"
+          sx={{
+            mt: 2,
+            width: { xs: '100%', sm: 'auto' },
+          }}
+          disabled={isSubmitLoading}
+        >
           {isSubmitLoading ? 'Submitting...' : 'Submit'}
         </Button>
       </form>

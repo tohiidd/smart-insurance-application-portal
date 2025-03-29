@@ -5,7 +5,7 @@ import DynamicForm from '../components/Form/DynamicForm';
 import FormTabPanel from '../components/Form/FormTabPanel';
 import { useToast } from '../context/ToastContext';
 
-export default function FormPage() {
+function FormPage() {
   const [formData, setFormData] = useState<FormData[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
@@ -43,9 +43,42 @@ export default function FormPage() {
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="form tabs">
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label="form tabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            '& .MuiTabs-scrollButtons': {
+              display: { xs: 'flex', sm: 'none' },
+              width: '40px',
+              '&.Mui-disabled': {
+                display: 'none',
+              },
+            },
+            '& .MuiTabs-flexContainer': {
+              gap: 1,
+              px: 1,
+            },
+            '& .MuiTab-root': {
+              minWidth: 'auto',
+              px: 2,
+            },
+          }}
+        >
           {formData?.map((form) => (
-            <Tab key={form?.formId} label={form?.title} id={form?.formId} />
+            <Tab
+              key={form?.formId}
+              label={form?.title}
+              id={form?.formId}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 'medium',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
+              }}
+            />
           ))}
         </Tabs>
       </Box>
@@ -57,3 +90,5 @@ export default function FormPage() {
     </Box>
   );
 }
+
+export default FormPage;
