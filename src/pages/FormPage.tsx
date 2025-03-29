@@ -1,9 +1,10 @@
 import { SyntheticEvent, useEffect, useState } from 'react';
-import { Box, CircularProgress, Tab, Tabs } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import { formService, FormData } from '../services/formService';
 import DynamicForm from '../components/Form/DynamicForm';
 import FormTabPanel from '../components/Form/FormTabPanel';
 import { useToast } from '../context/ToastContext';
+import LoadingPlaceholder from '../components/Ui/LoadingPlaceholder';
 
 function FormPage() {
   const [formData, setFormData] = useState<FormData[] | null>(null);
@@ -32,13 +33,8 @@ function FormPage() {
   }, [showToast]);
 
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingPlaceholder />;
   }
-  console.log('formData', formData);
 
   return (
     <Box sx={{ width: '100%' }}>
